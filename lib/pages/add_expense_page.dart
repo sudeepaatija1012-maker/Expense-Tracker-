@@ -16,12 +16,36 @@ class _AddExpensePageState extends State<AddExpensePage> {
   String? selectedCategory;
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
+  DateTime selectedDate = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    _dateController.text = "${selectedDate.toLocal()}".split(' ')[0];
+  }
 
   @override
   void dispose() {
     _amountController.dispose();
     _descriptionController.dispose();
+    _dateController.dispose();
     super.dispose();
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+        _dateController.text = "${picked.toLocal()}".split(' ')[0];
+      });
+    }
   }
 
   @override
@@ -64,6 +88,22 @@ class _AddExpensePageState extends State<AddExpensePage> {
                   borderRadius: BorderRadius.circular(15),
                 ),
                 prefixIcon: Icon(Icons.abc),
+              ),
+            ),
+          ),
+          SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: TextField(
+              controller: _dateController,
+              readOnly: true,
+              onTap: () => _selectDate(context),
+              decoration: InputDecoration(
+                labelText: 'Date',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                prefixIcon: Icon(Icons.calendar_today),
               ),
             ),
           ),
@@ -136,7 +176,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                       amount: amountText,
                       description: descriptionText,
                       category: selectedCategory!,
-                      date: DateTime.now(),
+                      date: selectedDate,
                     );
                     BlocProvider.of<ExpenseCubit>(
                       context,
